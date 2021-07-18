@@ -13,35 +13,68 @@ function App() {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch('https://swapi.dev/api/films/');
+      const response = await fetch('https://react-http-1bdfa-default-rtdb.asia-southeast1.firebasedatabase.app/movies.json');
       if (!response.ok) {
         throw new Error('Something went wrong!');
       }
 
       const data = await response.json();
+      console.log(data);
 
-      const transformedMovies = data.results.map((movieData) => {
-        return {
-          id: movieData.episode_id,
-          title: movieData.title,
-          openingText: movieData.opening_crawl,
-          releaseDate: movieData.release_date,
-        };
-      });
-      setMovies(transformedMovies);
+      // Object 處理方式
+      const loadedMovies = [];
+
+      for (const key in data) {
+        console.log(data[key].releaseDate);
+        loadedMovies.push({
+          id: key,
+          title: data[key].title,
+          openingText: data[key].openingText,
+          release: data[key].releaseDate,
+        });
+      }
+
+      setMovies(loadedMovies);
+
+      // Array 處理方式
+      // const transformedMovies = data.results.map(movieData => {
+      //   return {
+      //     id: data.name,
+      //     title: data.title,
+      //     openingText: data.openingText,
+      //     releaseDate: data.releaseDate,
+      //   };
+      // });
+      // setMovies(transformedMovies);
     } catch (error) {
       setError(error.message);
     }
     setIsLoading(false);
   }, []);
 
+  async function addMovieHandler(movie) {
+    try {
+      const response = await fetch('https://react-http-1bdfa-default-rtdb.asia-southeast1.firebasedatabase.app/movies.json', {
+        method: 'POST',
+        body: JSON.stringify(movie),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) throw new Error('Something went wrong!');
+
+      const data = await response.json();
+      fetchMoviesHandler();
+      console.log(data);
+    } catch (error) {
+      setError(error.message);
+    }
+  }
+
   useEffect(() => {
     fetchMoviesHandler();
   }, [fetchMoviesHandler]);
-
-  function addMovieHandler(movie) {
-    console.log(movie);
-  }
 
   let content = <p>Found no movies.</p>;
 
